@@ -1,10 +1,20 @@
--- Platform logs landed via kafka_logs -> Kafka -> clickhouse_kafka.
--- After the clickhouse_kafka integration exists, create Kafka Engine tables
--- in the auto-created service_<kafka> database, then persist with MVs here.
--- Adjust topic names / Kafka database name to match the Console integration.
+-- Platform logs via kafka_logs -> Kafka -> clickhouse_kafka.
+-- Aiven rejects database names that start with "aiven"; use platform_logs.
+-- Tables below are created by the clickhouse_kafka integration user_config
+-- (see steve-test integration edb7331f-ac05-4b45-a6c6-36e9e41d2b8a). Documented
+-- here for reference / local recreation.
 
--- Note: Aiven ClickHouse rejects database names starting with "aiven".
 CREATE DATABASE IF NOT EXISTS platform_logs;
+
+-- Kafka engine tables live in service_hyperdx-logs-kafka:
+--   pulse_ch_logs  (topic aiven.pulse-ch-euw1.logs)
+--   pulse_db_logs  (topic aiven.pulse-db-euw1.logs)
+-- Materialized views persist into platform_logs:
+--   pulse_ch_logs_mv
+--   pulse_db_logs_mv
+--
+-- Journal JSON shape from Aiven kafka_logs:
+--   PRIORITY, SYSTEMD_UNIT, HOSTNAME, MESSAGE, REALTIME_TIMESTAMP, timestamp
 
 CREATE TABLE IF NOT EXISTS platform_logs.service_logs
 (
@@ -19,16 +29,3 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(timestamp)
 ORDER BY (service_name, timestamp)
 TTL toDateTime(timestamp) + INTERVAL 14 DAY;
-
--- Example after clickhouse_kafka creates service_hyperdx_logs_kafka.*:
---
--- CREATE MATERIALIZED VIEW IF NOT EXISTS platform_logs.mv_pulse_ch_logs
--- TO platform_logs.service_logs AS
--- SELECT
---     parseDateTime64BestEffortOrZero(JSONExtractString(raw, 'timestamp')) AS timestamp,
---     'pulse-ch-euw1' AS service_name,
---     JSONExtractString(raw, 'unit') AS unit,
---     JSONExtractString(raw, 'hostname') AS hostname,
---     JSONExtractString(raw, 'message') AS message,
---     raw
--- FROM service_hyperdx_logs_kafka.aiven_pulse_ch_euw1_logs;

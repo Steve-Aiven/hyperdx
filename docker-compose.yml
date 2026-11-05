@@ -1,0 +1,14 @@
+# Local preview only. Aiven Runtime builds from the Dockerfile, not Compose.
+services:
+  hyperdx:
+    build: .
+    ports:
+      - "8080:8080"
+      - "4318:4318"
+    environment:
+      CLICKHOUSE_ENDPOINT: ${CLICKHOUSE_ENDPOINT:-}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-avnadmin}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-}
+      HYPERDX_OTEL_EXPORTER_CLICKHOUSE_DATABASE: ${HYPERDX_OTEL_EXPORTER_CLICKHOUSE_DATABASE:-otel}
+      EXPRESS_SESSION_SECRET: ${EXPRESS_SESSION_SECRET:-local-dev-only-change-me}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}

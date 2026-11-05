@@ -3,9 +3,10 @@
 -- in the auto-created service_<kafka> database, then persist with MVs here.
 -- Adjust topic names / Kafka database name to match the Console integration.
 
-CREATE DATABASE IF NOT EXISTS aiven_logs;
+-- Note: Aiven ClickHouse rejects database names starting with "aiven".
+CREATE DATABASE IF NOT EXISTS platform_logs;
 
-CREATE TABLE IF NOT EXISTS aiven_logs.service_logs
+CREATE TABLE IF NOT EXISTS platform_logs.service_logs
 (
     timestamp DateTime64(3),
     service_name LowCardinality(String),
@@ -21,8 +22,8 @@ TTL toDateTime(timestamp) + INTERVAL 14 DAY;
 
 -- Example after clickhouse_kafka creates service_hyperdx_logs_kafka.*:
 --
--- CREATE MATERIALIZED VIEW IF NOT EXISTS aiven_logs.mv_pulse_ch_logs
--- TO aiven_logs.service_logs AS
+-- CREATE MATERIALIZED VIEW IF NOT EXISTS platform_logs.mv_pulse_ch_logs
+-- TO platform_logs.service_logs AS
 -- SELECT
 --     parseDateTime64BestEffortOrZero(JSONExtractString(raw, 'timestamp')) AS timestamp,
 --     'pulse-ch-euw1' AS service_name,

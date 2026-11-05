@@ -8,12 +8,12 @@ Monitors:
 | --- | --- | --- |
 | Pulse app traces / logs / metrics | `pulse-ui` OTEL export | OTLP/HTTP → Runtime `:4318` → ClickHouse `otel` |
 | Aiven service metrics | `pulse-ch-euw1`, `pulse-db-euw1` | OpenTelemetry integration endpoint → same OTLP URL |
-| Aiven platform logs | `pulse-ch-euw1`, `pulse-db-euw1` | `kafka_logs` → `hyperdx-logs-kafka` → `clickhouse_kafka` → `aiven_logs` |
+| Aiven platform logs | `pulse-ch-euw1`, `pulse-db-euw1` | `kafka_logs` → `hyperdx-logs-kafka` → `clickhouse_kafka` → `platform_logs` |
 
 ## Services
 
 - `hyperdx` – Runtime app (this repo)
-- `hyperdx-ch` – ClickHouse (`otel`, `aiven_logs` databases)
+- `hyperdx-ch` – ClickHouse (`otel`, `platform_logs` databases)
 - `hyperdx-logs-kafka` – Kafka buffer for platform logs
 
 ## Runtime environment
@@ -55,8 +55,8 @@ The OTLP base looks like `https://<id>-4318.<region>.aiven.app` (Runtime termina
 1. Create Kafka service `hyperdx-logs-kafka`
 2. `kafka_logs` from `pulse-ch-euw1` / `pulse-db-euw1` into topics such as `aiven.pulse-ch-euw1.logs`
 3. `clickhouse_kafka` from Kafka into `hyperdx-ch`
-4. Persist with MVs into `aiven_logs.service_logs` (see [`clickhouse/aiven_logs.sql`](clickhouse/aiven_logs.sql))
-5. In HyperDX, add a custom log source on `aiven_logs.service_logs`
+4. Persist with MVs into `platform_logs.service_logs` (see [`clickhouse/aiven_logs.sql`](clickhouse/aiven_logs.sql); Aiven rejects DB names starting with `aiven`)
+5. In HyperDX, add a custom log source on `platform_logs.service_logs`
 
 There is no direct Aiven `logs` → ClickHouse integration (`logs` targets OpenSearch only). Rsyslog cannot terminate on Runtime (HTTP-only public ports).
 

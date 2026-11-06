@@ -1,13 +1,16 @@
-# HyperDX / ClickStack on Aiven Runtime, with Aiven for ClickHouse as the
-# telemetry store. The image still ships an embedded ClickHouse + Mongo; the
-# collector is pointed at Aiven CH via CLICKHOUSE_ENDPOINT (see entrypoint.sh).
-FROM clickhouse/clickstack-all-in-one:latest
+# DEPRECATED packaging path.
+# Build HyperDX for Aiven Runtime from the fork monorepo instead:
+#
+#   Repo:   Steve-Aiven/hyperdx-app
+#   File:   docker/aiven/Dockerfile.runtime
+#
+# That image uses DATASTORE=postgres (Aiven for PostgreSQL) for app state and
+# CLICKHOUSE_ENDPOINT (Aiven for ClickHouse) for telemetry. Embedded Mongo is
+# no longer used.
+#
+# This stub keeps the old Runtime service from building an incompatible
+# all-in-one image by mistake. Point the Aiven application VCS integration at
+# hyperdx-app and dockerfile docker/aiven/Dockerfile.runtime.
 
-USER root
-COPY entrypoint.sh /aiven-entrypoint.sh
-RUN chmod +x /aiven-entrypoint.sh
-
-# Runtime public ports are HTTP-only. Expose UI and OTLP/HTTP (not gRPC 4317).
-EXPOSE 8080 4318
-
-ENTRYPOINT ["/aiven-entrypoint.sh"]
+FROM alpine:3.20
+RUN echo "Use Steve-Aiven/hyperdx-app docker/aiven/Dockerfile.runtime" >&2 && exit 1
